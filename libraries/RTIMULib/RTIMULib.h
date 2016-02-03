@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-//  This file is part of RTIMULib-Teensy
+//  This file is part of RTIMULib
 //
-//  Copyright (c) 2014-2015, richards-tech
+//  Copyright (c) 2014-2015, richards-tech, LLC
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of
 //  this software and associated documentation files (the "Software"), to deal in
@@ -30,19 +30,23 @@
 #include "RTMath.h"
 
 #include "RTFusion.h"
-#include "RTFusionRTQF.h"
 #include "RTFusionKalman4.h"
 
 #include "RTIMUHal.h"
-#include "utility/RTIMU.h"
-#include "utility/RTIMUNull.h"
-#include "utility/RTIMUMPU9150.h"
-#include "utility/RTIMUGD20HM303D.h"
-#include "utility/RTIMUGD20M303DLHC.h"
-#include "utility/RTIMULSM9DS0.h"
+#include "IMUDrivers/RTIMU.h"
+#include "IMUDrivers/RTIMUNull.h"
+#include "IMUDrivers/RTIMUMPU9150.h"
+#include "IMUDrivers/RTIMUGD20HM303D.h"
+#include "IMUDrivers/RTIMUGD20M303DLHC.h"
+#include "IMUDrivers/RTIMULSM9DS0.h"
 
-#include "utility/RTPressure.h"
-#include "utility/RTPressureBMP180.h"
+#include "IMUDrivers/RTPressure.h"
+#include "IMUDrivers/RTPressureBMP180.h"
+#include "IMUDrivers/RTPressureLPS25H.h"
+#include "IMUDrivers/RTPressureMS5611.h"
+
+#include "IMUDrivers/RTHumidity.h"
+#include "IMUDrivers/RTHumidityHTS221.h"
 
 #include "RTIMUSettings.h"
 

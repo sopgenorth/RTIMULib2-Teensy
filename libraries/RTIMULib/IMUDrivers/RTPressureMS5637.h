@@ -21,44 +21,49 @@
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//  The MPU-9250 and SPI driver code is based on code generously supplied by
-//  staslock@gmail.com (www.clickdrive.io)
+#ifndef _RTPRESSUREMS5637_H_
+#define _RTPRESSUREMS5637_H_
 
-#ifndef _RTIMULIBDEFS_H
-#define	_RTIMULIBDEFS_H
+#include "RTPressure.h"
 
-#include "RTMath.h"
-#include "IMUDrivers/RTIMUDefs.h"
+//  State definitions
 
-//  these defines describe the various fusion filter options
+#define MS5637_STATE_IDLE               0
+#define MS5637_STATE_TEMPERATURE        1
+#define MS5637_STATE_PRESSURE           2
 
-#define RTFUSION_TYPE_NULL                  0                   // just a dummy to keep things happy if not needed
-#define RTFUSION_TYPE_KALMANSTATE4          1                   // kalman state is the quaternion pose
-#define RTFUSION_TYPE_RTQF                  2                   // RT quaternion fusion
+class RTIMUSettings;
 
-#define RTFUSION_TYPE_COUNT                 3                   // number of fusion algorithm types
-
-//  This is a convenience structure that can be used to pass IMU data around
-
-typedef struct
+class RTPressureMS5637 : public RTPressure
 {
-    uint64_t timestamp;
-    bool fusionPoseValid;
-    RTVector3 fusionPose;
-    bool fusionQPoseValid;
-    RTQuaternion fusionQPose;
-    bool gyroValid;
-    RTVector3 gyro;
-    bool accelValid;
-    RTVector3 accel;
-    bool compassValid;
-    RTVector3 compass;
-    bool pressureValid;
-    RTFLOAT pressure;
-    bool temperatureValid;
-    RTFLOAT temperature;
-    bool humidityValid;
-    RTFLOAT humidity;
-} RTIMU_DATA;
+public:
+    RTPressureMS5637(RTIMUSettings *settings);
+    ~RTPressureMS5637();
 
-#endif // _RTIMULIBDEFS_H
+    virtual const char *pressureName() { return "MS5637"; }
+    virtual int pressureType() { return RTPRESSURE_TYPE_MS5611; }
+    virtual bool pressureInit();
+    virtual bool pressureRead(RTIMU_DATA& data);
+
+private:
+    void pressureBackground();
+    void setTestData();
+
+    unsigned char m_pressureAddr;                           // I2C address
+    RTFLOAT m_pressure;                                     // the current pressure
+    RTFLOAT m_temperature;                                  // the current temperature
+
+    int m_state;
+
+    uint16_t m_calData[6];                                  // calibration data
+
+    uint32_t m_D1;
+    uint32_t m_D2;
+
+    uint64_t m_timer;                                       // used to time coversions
+
+    bool m_validReadings;
+};
+
+#endif // _RTPRESSUREMS5637_H_
+

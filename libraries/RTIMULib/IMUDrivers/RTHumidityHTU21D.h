@@ -21,44 +21,37 @@
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//  The MPU-9250 and SPI driver code is based on code generously supplied by
-//  staslock@gmail.com (www.clickdrive.io)
+#ifndef _RTHUMIDITYHTU21D_H_
+#define _RTHUMIDITYHTU21D_H_
 
-#ifndef _RTIMULIBDEFS_H
-#define	_RTIMULIBDEFS_H
+#include "RTHumidity.h"
 
-#include "RTMath.h"
-#include "IMUDrivers/RTIMUDefs.h"
+class RTIMUSettings;
 
-//  these defines describe the various fusion filter options
-
-#define RTFUSION_TYPE_NULL                  0                   // just a dummy to keep things happy if not needed
-#define RTFUSION_TYPE_KALMANSTATE4          1                   // kalman state is the quaternion pose
-#define RTFUSION_TYPE_RTQF                  2                   // RT quaternion fusion
-
-#define RTFUSION_TYPE_COUNT                 3                   // number of fusion algorithm types
-
-//  This is a convenience structure that can be used to pass IMU data around
-
-typedef struct
+class RTHumidityHTU21D : public RTHumidity
 {
-    uint64_t timestamp;
-    bool fusionPoseValid;
-    RTVector3 fusionPose;
-    bool fusionQPoseValid;
-    RTQuaternion fusionQPose;
-    bool gyroValid;
-    RTVector3 gyro;
-    bool accelValid;
-    RTVector3 accel;
-    bool compassValid;
-    RTVector3 compass;
-    bool pressureValid;
-    RTFLOAT pressure;
-    bool temperatureValid;
-    RTFLOAT temperature;
-    bool humidityValid;
-    RTFLOAT humidity;
-} RTIMU_DATA;
+public:
+    RTHumidityHTU21D(RTIMUSettings *settings);
+    ~RTHumidityHTU21D();
 
-#endif // _RTIMULIBDEFS_H
+    virtual const char *humidityName() { return "HTU21D"; }
+    virtual int humidityType() { return RTHUMIDITY_TYPE_HTU21D; }
+    virtual bool humidityInit();
+    virtual bool humidityRead(RTIMU_DATA& data);
+
+private:
+    bool processBackground();
+
+    unsigned char m_humidityAddr;                           // I2C address
+
+    int m_state;
+    uint64_t m_startTime;
+    RTFLOAT m_humidity;                                     // the current humidity
+    RTFLOAT m_temperature;                                  // the current temperature
+    bool m_humidityValid;
+    bool m_temperatureValid;
+
+};
+
+#endif // _RTHUMIDITYHTU21D_H_
+

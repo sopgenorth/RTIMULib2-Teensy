@@ -21,44 +21,35 @@
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//  The MPU-9250 and SPI driver code is based on code generously supplied by
-//  staslock@gmail.com (www.clickdrive.io)
+#ifndef _RTHUMIDITY_H
+#define	_RTHUMIDITY_H
 
-#ifndef _RTIMULIBDEFS_H
-#define	_RTIMULIBDEFS_H
+#include "RTIMUSettings.h"
+#include "RTIMULibDefs.h"
+#include "RTHumidityDefs.h"
 
-#include "RTMath.h"
-#include "IMUDrivers/RTIMUDefs.h"
-
-//  these defines describe the various fusion filter options
-
-#define RTFUSION_TYPE_NULL                  0                   // just a dummy to keep things happy if not needed
-#define RTFUSION_TYPE_KALMANSTATE4          1                   // kalman state is the quaternion pose
-#define RTFUSION_TYPE_RTQF                  2                   // RT quaternion fusion
-
-#define RTFUSION_TYPE_COUNT                 3                   // number of fusion algorithm types
-
-//  This is a convenience structure that can be used to pass IMU data around
-
-typedef struct
+class RTHumidity
 {
-    uint64_t timestamp;
-    bool fusionPoseValid;
-    RTVector3 fusionPose;
-    bool fusionQPoseValid;
-    RTQuaternion fusionQPose;
-    bool gyroValid;
-    RTVector3 gyro;
-    bool accelValid;
-    RTVector3 accel;
-    bool compassValid;
-    RTVector3 compass;
-    bool pressureValid;
-    RTFLOAT pressure;
-    bool temperatureValid;
-    RTFLOAT temperature;
-    bool humidityValid;
-    RTFLOAT humidity;
-} RTIMU_DATA;
+public:
+    //  Humidity sensor objects should always be created with the following call
 
-#endif // _RTIMULIBDEFS_H
+    static RTHumidity *createHumidity(RTIMUSettings *settings);
+
+    //  Constructor/destructor
+
+    RTHumidity(RTIMUSettings *settings);
+    virtual ~RTHumidity();
+
+    //  These functions must be provided by sub classes
+
+    virtual const char *humidityName() = 0;                 // the name of the humidity sensor
+    virtual int humidityType() = 0;                         // the type code of the humidity sensor
+    virtual bool humidityInit() = 0;                        // set up the humidity sensor
+    virtual bool humidityRead(RTIMU_DATA& data) = 0;        // get latest value
+
+protected:
+    RTIMUSettings *m_settings;                              // the settings object pointer
+
+};
+
+#endif // _RTHUMIDITY_H

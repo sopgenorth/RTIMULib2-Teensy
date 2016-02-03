@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-//  This file is part of RTIMULib-Teensy
+//  This file is part of RTIMULib
 //
-//  Copyright (c) 2014-2015, richards-tech
+//  Copyright (c) 2014-2015, richards-tech, LLC
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of
 //  this software and associated documentation files (the "Software"), to deal in
@@ -22,7 +22,9 @@
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "RTMath.h"
-#include <Arduino.h>
+#ifdef WIN32
+#include <qdatetime.h>
+#endif
 
 //  Strings are put here. So the display functions are no re-entrant!
 
@@ -30,7 +32,15 @@ char RTMath::m_string[1000];
 
 uint64_t RTMath::currentUSecsSinceEpoch()
 {
-    return micros();
+#ifdef WIN32
+#include <qdatetime.h>
+    return QDateTime::currentMSecsSinceEpoch();
+#else
+    struct timeval tv;
+
+    gettimeofday(&tv, NULL);
+    return (uint64_t)tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec;
+#endif
 }
 
 const char *RTMath::displayRadians(const char *label, RTVector3& vec)
@@ -82,7 +92,7 @@ const char *RTMath::display(const char *label, RTMatrix4x4& mat)
 
 RTFLOAT RTMath::convertPressureToHeight(RTFLOAT pressure, RTFLOAT staticPressure)
 {
-    return 44330.8 * (1 - pow(pressure / staticPressure, 0.190263));
+    return 44330.8 * (1 - pow(pressure / staticPressure, (RTFLOAT)0.190263));
 }
 
 

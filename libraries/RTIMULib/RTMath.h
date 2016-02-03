@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-//  This file is part of RTIMULib-Teensy
+//  This file is part of RTIMULib
 //
-//  Copyright (c) 2014-2015, richards-tech
+//  Copyright (c) 2014-2015, richards-tech, LLC
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of
 //  this software and associated documentation files (the "Software"), to deal in
@@ -55,7 +55,7 @@ public:
     static const char *display(const char *label, RTMatrix4x4& mat);
 
     //  currentUSecsSinceEpoch() is the source of all timestamps and
-    //  is the number of uS sonce the standard epoch
+    //  is the number of uS since the standard epoch
 
     static uint64_t currentUSecsSinceEpoch();
 
@@ -108,6 +108,8 @@ public:
     inline void setY(const RTFLOAT val) { m_data[1] = val; }
     inline void setZ(const RTFLOAT val) { m_data[2] = val; }
     inline void setData(const int i, RTFLOAT val) { m_data[i] = val; }
+    inline void fromArray(RTFLOAT *val) { memcpy(m_data, val, 3 * sizeof(RTFLOAT)); }
+    inline void toArray(RTFLOAT *val) const { memcpy(val, m_data, 3 * sizeof(RTFLOAT)); }
 
 private:
     RTFLOAT m_data[3];
@@ -153,6 +155,8 @@ public:
     inline void setY(const RTFLOAT val) { m_data[2] = val; }
     inline void setZ(const RTFLOAT val) { m_data[3] = val; }
     inline void setData(const int i, RTFLOAT val) { m_data[i] = val; }
+    inline void fromArray(RTFLOAT *val) { memcpy(m_data, val, 4 * sizeof(RTFLOAT)); }
+    inline void toArray(RTFLOAT *val) const { memcpy(val, m_data, 4 * sizeof(RTFLOAT)); }
 
 private:
     RTFLOAT m_data[4];

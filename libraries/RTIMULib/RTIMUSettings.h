@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-//  This file is part of RTIMULib-Teensy
+//  This file is part of RTIMULib
 //
-//  Copyright (c) 2014-2015, richards-tech
+//  Copyright (c) 2014-2015, richards-tech, LLC
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of
 //  this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//  The MPU-9250 driver code is based on code generously supplied by
+//  The MPU-9250 and SPI driver code is based on code generously supplied by
 //  staslock@gmail.com (www.clickdrive.io)
 
 #ifndef _RTIMUSETTINGS_H
@@ -29,29 +29,8 @@
 
 #include "RTMath.h"
 #include "RTIMUHal.h"
-#include <SD.h>
-#include <SPI.h>
-#include <EEPROM.h>
 
-#define SD_CHIP_SELECT  10
-#define IMU_CHIP_SELECT  9
-
-//  Defines for EEPROM config
-
-#define RTIMULIB_CAL_DATA_VALID_LOW         0xfc            // pattern to detect valid config - low byte
-#define RTIMULIB_CAL_DATA_VALID_HIGH        0x15            // pattern to detect valid config - high byte
-
-typedef struct
-{
-    unsigned char validL;                                   // should contain the valid pattern if a good config
-    unsigned char validH;                                   // should contain the valid pattern if a good config
-    unsigned char magValid;                                 // true if data valid
-    unsigned char pad;
-    RTFLOAT magMin[3];                                      // min values
-    RTFLOAT magMax[3];                                      // max values
-} RTIMULIB_CAL_DATA;
-
-//  Settings keys for SD card based  config
+//  Settings keys
 
 #define RTIMULIB_IMU_TYPE                   "IMUType"
 #define RTIMULIB_FUSION_TYPE                "FusionType"
@@ -64,6 +43,8 @@ typedef struct
 #define RTIMULIB_AXIS_ROTATION              "AxisRotation"
 #define RTIMULIB_PRESSURE_TYPE              "PressureType"
 #define RTIMULIB_I2C_PRESSUREADDRESS        "I2CPressureAddress"
+#define RTIMULIB_HUMIDITY_TYPE              "HumidityType"
+#define RTIMULIB_I2C_HUMIDITYADDRESS        "I2CHumidityAddress"
 
 //  MPU9150 settings keys
 
@@ -138,6 +119,20 @@ typedef struct
 #define RTIMULIB_LSM9DS0_COMPASS_SAMPLERATE "LSM9DS0CompassSampleRate"
 #define RTIMULIB_LSM9DS0_COMPASS_FSR       "LSM9DS0CompassFsr"
 
+//  LSM9DS1 settings keys
+
+#define RTIMULIB_LSM9DS1_GYRO_SAMPLERATE   "LSM9DS1GyroSampleRate"
+#define RTIMULIB_LSM9DS1_GYRO_BW           "LSM9DS1GyroBW"
+#define RTIMULIB_LSM9DS1_GYRO_HPF          "LSM9DS1GyroHpf"
+#define RTIMULIB_LSM9DS1_GYRO_FSR          "LSM9DS1GyroFsr"
+
+#define RTIMULIB_LSM9DS1_ACCEL_SAMPLERATE  "LSM9DS1AccelSampleRate"
+#define RTIMULIB_LSM9DS1_ACCEL_FSR         "LSM9DS1AccelFsr"
+#define RTIMULIB_LSM9DS1_ACCEL_LPF         "LSM9DS1AccelLpf"
+
+#define RTIMULIB_LSM9DS1_COMPASS_SAMPLERATE "LSM9DS1CompassSampleRate"
+#define RTIMULIB_LSM9DS1_COMPASS_FSR       "LSM9DS1CompassFsr"
+
 //  BMX055 settings keys
 
 #define RTIMULIB_BMX055_GYRO_SAMPLERATE     "BMX055GyroSampleRate"
@@ -155,7 +150,7 @@ typedef struct
 #define RTIMULIB_GYRO_BIAS_Y                "GyroBiasY"
 #define RTIMULIB_GYRO_BIAS_Z                "GyroBiasZ"
 
-//  Compass calibration settings keys
+//  Compass calibration and adjustment settings keys
 
 #define RTIMULIB_COMPASSCAL_VALID           "CompassCalValid"
 #define RTIMULIB_COMPASSCAL_MINX            "CompassCalMinX"
@@ -195,7 +190,14 @@ typedef struct
 class RTIMUSettings : public RTIMUHal
 {
 public:
+
+    //  Standard constructor sets up for ini file in working directory
+
     RTIMUSettings(const char *productType = "RTIMULib");
+
+    //  Alternate constructor allow ini file to be in any directory
+
+    RTIMUSettings(const char *settingsDirectory, const char *productType);
 
     //  This function tries to find an IMU. It stops at the first valid one
     //  and returns true or else false
@@ -206,6 +208,11 @@ public:
     //  and returns true or else false
 
     bool discoverPressure(int& pressureType, unsigned char& pressureAddress);
+
+    //  This function tries to find a humidity sensor. It stops at the first valid one
+    //  and returns true or else false
+
+    bool discoverHumidity(int& humidityType, unsigned char& humidityAddress);
 
     //  This function sets the settings to default values.
 
@@ -227,6 +234,8 @@ public:
     int m_axisRotation;                                     // axis rotation code
     int m_pressureType;                                     // type code of pressure sensor in use
     unsigned char m_I2CPressureAddress;                     // I2C slave address of the pressure sensor
+    int m_humidityType;                                     // type code of humidity sensor in use
+    unsigned char m_I2CHumidityAddress;                     // I2C slave address of the humidity sensor
 
     bool m_compassCalValid;                                 // true if there is valid compass calibration data
     RTVector3 m_compassCalMin;                              // the minimum values
@@ -318,6 +327,20 @@ public:
     int m_LSM9DS0CompassSampleRate;                         // the compass sample rate
     int m_LSM9DS0CompassFsr;                                // the compass full scale range
 
+    //  LSM9DS1
+
+    int m_LSM9DS1GyroSampleRate;                            // the gyro sample rate
+    int m_LSM9DS1GyroBW;                                    // the gyro bandwidth code
+    int m_LSM9DS1GyroHpf;                                   // the gyro high pass filter cutoff code
+    int m_LSM9DS1GyroFsr;                                   // the gyro full scale range
+
+    int m_LSM9DS1AccelSampleRate;                           // the accel sample rate
+    int m_LSM9DS1AccelFsr;                                  // the accel full scale range
+    int m_LSM9DS1AccelLpf;                                  // the accel low pass filter
+
+    int m_LSM9DS1CompassSampleRate;                         // the compass sample rate
+    int m_LSM9DS1CompassFsr;                                // the compass full scale range
+
     //  BMX055
 
     int m_BMX055GyroSampleRate;                             // the gyro sample rate
@@ -337,12 +360,7 @@ private:
 
     char m_filename[256];                                    // the settings file name
 
-    File m_fd;
-    bool m_usingSD;                                          // true if using SD card
-
-    void EEErase(byte device);
-    void EEWrite(byte device, RTIMULIB_CAL_DATA * calData);
-    boolean EERead(byte device, RTIMULIB_CAL_DATA * calData);
+    FILE *m_fd;
 };
 
 #endif // _RTIMUSETTINGS_H
